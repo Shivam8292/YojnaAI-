@@ -1,0 +1,46 @@
+# Environments
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Python caching & environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+env/
+
+# Vector database storage
+chroma_db/
+
+# Data download caches
+gov_myscheme_data/
+
+# Build outputs
+dist/
+build/
+.tsbuildinfo
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
