@@ -1,99 +1,80 @@
-import { useState, useEffect } from 'react'
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LanguageSelect from './pages/LanguageSelect';
+import Home from './pages/Home';
+import EligibilityForm from './pages/EligibilityForm';
+import Results from './pages/Results';
+import SchemeDetail from './pages/SchemeDetail';
+import OfflineBanner from './components/OfflineBanner';
 
-function App() {
-  const [healthStatus, setHealthStatus] = useState({ loading: true, status: 'offline', chromaDocs: 0 })
-  const [testResponse, setTestResponse] = useState(null)
+// Global Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-  useEffect(() => {
-    // Check backend health
-    fetch('http://localhost:8000/api/health')
-      .then(res => {
-        if (!res.ok) throw new Error('API down')
-        return res.json()
-      })
-      .then(data => {
-        setHealthStatus({
-          loading: false,
-          status: 'online',
-          chromaDocs: data.chroma_docs || 0
-        })
-      })
-      .catch(err => {
-        setHealthStatus({
-          loading: false,
-          status: 'error',
-          chromaDocs: 0
-        })
-      })
-  }, [])
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="app-container p-6 flex flex-col items-center justify-center text-center">
-        {/* Header Branding */}
-        <div className="my-8">
-          <div className="text-accent text-lg font-bold tracking-wider uppercase mb-1">
-            Sarkar Saathi
-          </div>
-          <h1 className="text-3xl font-extrabold text-primary mb-2">
-            सरकार साथी
-          </h1>
-          <p className="text-text-secondary text-sm italic">
-            "Aam Aadmi Ka AI Sahayak — Aapki Eligibility, Bina Kisi Dalal Ke"
-          </p>
-        </div>
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught a React runtime error:", error, errorInfo);
+  }
 
-        {/* Milestone 1 Status Card */}
-        <div className="w-full bg-white rounded-xl border border-border p-5 shadow-sm mb-6 text-left">
-          <h2 className="text-xl font-bold text-text-primary mb-4 border-b border-border pb-2">
-            Milestone 1: Project Setup Verification
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-text-primary text-base">React (Vite + Tailwind) Status:</span>
-              <span className="px-3 py-1 bg-success text-white text-xs font-bold rounded-full">
-                ACTIVE
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-text-primary text-base">FastAPI Backend API:</span>
-              {healthStatus.loading ? (
-                <span className="text-text-secondary text-sm animate-pulse">Checking...</span>
-              ) : healthStatus.status === 'online' ? (
-                <span className="px-3 py-1 bg-success text-white text-xs font-bold rounded-full">
-                  ONLINE
-                </span>
-              ) : (
-                <span className="px-3 py-1 bg-error text-white text-xs font-bold rounded-full">
-                  OFFLINE / ERROR
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
-              <span className="text-text-secondary text-sm">ChromaDB Ingested Docs:</span>
-              <span className="font-mono font-bold text-primary">{healthStatus.chromaDocs}</span>
-            </div>
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4 font-sans">
+          <div className="max-w-md w-full bg-white rounded-xl border border-[#d32f2f] p-6 text-center shadow-md">
+            <div className="text-[#d32f2f] text-4xl mb-3">⚠️</div>
+            <h2 className="text-xl font-bold text-[#1a1a1a] mb-2">
+              अनुप्रयोग क्रैश / Application Error
+            </h2>
+            <p className="text-sm text-[#555555] mb-6">
+              कुछ आंतरिक त्रुटि हुई है। कृपया होम पेज पर वापस जाएं।<br />
+              An internal error has occurred. Please return to the language selection page.
+            </p>
+            <button
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = '/';
+              }}
+              className="w-full bg-[#1a6b3c] hover:bg-opacity-90 text-white font-bold py-3 px-6 rounded-lg transition"
+            >
+              शुरुआत से शुरू करें / Restart Application
+            </button>
           </div>
         </div>
+      );
+    }
 
-        {/* Action button mock */}
-        <button 
-          className="w-full bg-primary hover:bg-opacity-90 text-white font-bold py-3 px-6 rounded-lg transition duration-200"
-          onClick={() => alert('Sarkar Saathi Project Setup is verified!')}
-        >
-          Verify Setup
-        </button>
-
-        {/* Bottom spacer */}
-        <div className="mt-8 text-xs text-text-secondary">
-          Phase 7 — Milestone 1 Setup Complete
-        </div>
-      </div>
-    </div>
-  )
+    return this.props.children;
+  }
 }
 
-export default App
+function App() {
+  return (
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background font-body antialiased">
+        {/* Network offline warning banner */}
+        <OfflineBanner />
+        
+        {/* Centered Mobile Frame container */}
+        <div className="app-container">
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LanguageSelect />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/check" element={<EligibilityForm />} />
+              <Route path="/results" element={<Results />} />
+              <Route path="/scheme/:id" element={<SchemeDetail />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

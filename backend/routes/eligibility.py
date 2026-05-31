@@ -53,6 +53,14 @@ async def check_eligibility(payload: EligibilityRequest):
         
         # Add metadata and flags
         schemes_list = synthesis_result.get("schemes", [])
+        
+        # Map source document state metadata back to the LLM response items
+        doc_metadata_map = {doc["id"]: doc["metadata"] for doc in matched_docs}
+        for s in schemes_list:
+            doc_id = s.get("id")
+            meta = doc_metadata_map.get(doc_id, {})
+            s["state"] = meta.get("state", "central")
+            
         return {
             "schemes": schemes_list,
             "total_found": len(schemes_list),
@@ -84,7 +92,8 @@ async def check_eligibility(payload: EligibilityRequest):
                 "benefit": benefit,
                 "why_eligible": why_eligible,
                 "apply_link": "https://www.myscheme.gov.in",
-                "ministry": ministry
+                "ministry": ministry,
+                "state": doc["metadata"].get("state", "central")
             })
             
         return {
