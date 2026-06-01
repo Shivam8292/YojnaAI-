@@ -61,7 +61,18 @@ export const t = {
     readFullUpdates: "पूरा अपडेट पढ़ें",
     sourceFileLabel: "मूल दस्तावेज़",
     officialApplyLink: "आधिकारिक वेबसाइट पर जाएं",
-    offlineWarning: "इंटरनेट डिस्कनेक्ट हो गया है। ऑफलाइन मोड में हैं।"
+    offlineWarning: "इंटरनेट डिस्कनेक्ट हो गया है। ऑफलाइन मोड में हैं।",
+    
+    // Accordion Sections
+    sec_title_description: "योजना विवरण (Overview)",
+    sec_details: "योजना के बारे में (Details)",
+    sec_benefits: "योजना के लाभ (Benefits)",
+    sec_eligibility: "पात्रता मापदंड (Eligibility)",
+    sec_exclusions: "अपात्रता / किसे लाभ नहीं मिलेगा (Exclusions)",
+    sec_application_process: "आवेदन कैसे करें (How to Apply)",
+    sec_documents_required: "आवश्यक दस्तावेज़ (Required Documents)",
+    sec_faqs: "अक्सर पूछे जाने वाले प्रश्न (FAQs)",
+    sec_sources: "स्रोत और संदर्भ (Official Links)"
   },
   en: {
     selectLanguage: "Choose Your Language / अपनी भाषा चुनें",
@@ -125,6 +136,17 @@ export const t = {
     readFullUpdates: "Read full update",
     sourceFileLabel: "Source Document",
     officialApplyLink: "Visit Official Website",
-    offlineWarning: "Internet disconnected. Operating in offline mode."
+    offlineWarning: "Internet disconnected. Operating in offline mode.",
+    
+    // Accordion Sections
+    sec_title_description: "Scheme Overview",
+    sec_details: "Scheme Details",
+    sec_benefits: "Scheme Benefits",
+    sec_eligibility: "Eligibility Criteria",
+    sec_exclusions: "Exclusions & Limitations",
+    sec_application_process: "How to Apply",
+    sec_documents_required: "Required Documents",
+    sec_faqs: "Frequently Asked Questions (FAQs)",
+    sec_sources: "Official Resources & Links"
   }
 };

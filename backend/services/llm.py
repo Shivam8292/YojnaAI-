@@ -85,3 +85,50 @@ def synthesize_results(user_profile: str, schemes: list, language: str) -> dict:
     except Exception as e:
         print(f"Error invoking Groq API: {e}")
         raise e
+
+def translate_sections(sections: dict, target_lang: str) -> dict:
+    """
+    Translates structured scheme sections into target language (Hindi) using Groq.
+    If translation fails or client is not set, returns original sections.
+    """
+    if not _client or target_lang != "hi":
+        return sections
+        
+    # We only translate sections that have non-empty values
+    sections_to_translate = {k: v for k, v in sections.items() if v and k != "title_description"}
+    if not sections_to_translate:
+        return sections
+        
+    system_prompt = (
+        "You are an expert government scheme details translator. "
+        "Your task is to translate the provided dictionary values from English to clear, natural, and helpful Hindi (in Devanagari script). "
+        "Maintain the exact dictionary keys. Do not translate key names, only translate the values. "
+        "Keep technical terms like scheme names or specific requirements accurate. "
+        "Respond in a strict JSON format matching the input dictionary keys exactly, without any extra text."
+    )
+    
+    user_prompt = f"Dictionary to translate:\n{json.dumps(sections_to_translate, ensure_ascii=False)}"
+    
+    try:
+        response = _client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.1
+        )
+        
+        translated_data = json.loads(response.choices[0].message.content)
+        
+        # Merge translated values back into the original sections dict
+        result = sections.copy()
+        for k, v in translated_data.items():
+            if k in result:
+                result[k] = v
+        return result
+    except Exception as e:
+        print(f"Error translating sections: {e}")
+        return sections
+

@@ -12,6 +12,7 @@ export default function SchemeDetail() {
   const [scheme, setScheme] = useState(null);
   const [updates, setUpdates] = useState([]);
   const [error, setError] = useState(false);
+  const [openSection, setOpenSection] = useState('details');
 
   const translations = t[lang];
 
@@ -20,8 +21,8 @@ export default function SchemeDetail() {
       setLoading(true);
       setError(false);
       try {
-        // Fetch scheme details
-        const schemeRes = await axios.get(`/api/scheme/${id}`);
+        // Fetch scheme details with target language
+        const schemeRes = await axios.get(`/api/scheme/${id}?lang=${lang}`);
         setScheme(schemeRes.data);
         
         // Fetch live search updates from Tavily
@@ -44,7 +45,7 @@ export default function SchemeDetail() {
     };
 
     fetchSchemeData();
-  }, [id, navigate]);
+  }, [id, lang, navigate]);
 
   if (loading) {
     return (
@@ -75,6 +76,8 @@ export default function SchemeDetail() {
       </div>
     );
   }
+
+  const hasSections = scheme.sections && Object.keys(scheme.sections).filter(k => k !== 'title_description' && scheme.sections[k]).length > 0;
 
   return (
     <div className="flex-1 flex flex-col p-6 bg-background justify-between">
@@ -135,16 +138,75 @@ export default function SchemeDetail() {
             </div>
           )}
 
-          {/* Document contents details block */}
-          <div className="space-y-4">
-            <h3 className="text-base font-extrabold text-text-primary border-b border-border pb-1">
-              📋 Detail Guidelines / विस्तृत दिशानिर्देश
-            </h3>
-            
-            <div className="text-sm text-text-secondary leading-relaxed space-y-4 whitespace-pre-line max-h-[300px] overflow-y-auto pr-2 border border-border rounded-lg p-3 bg-background">
-              {scheme.document_content}
+          {/* Scheme Overview / Description if present */}
+          {scheme.sections?.title_description && (
+            <div className="bg-background rounded-xl p-4 border border-border">
+              <span className="text-xs font-extrabold text-primary uppercase block mb-1">
+                {translations.sec_title_description}
+              </span>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                {scheme.sections.title_description}
+              </p>
             </div>
-          </div>
+          )}
+
+          {/* Collapsible Accordion Sections */}
+          {hasSections ? (
+            <div className="space-y-3">
+              {[
+                { key: 'details', label: translations.sec_details, icon: '📋' },
+                { key: 'benefits', label: translations.sec_benefits, icon: '💰' },
+                { key: 'eligibility', label: translations.sec_eligibility, icon: '🎓' },
+                { key: 'exclusions', label: translations.sec_exclusions, icon: '🚫' },
+                { key: 'application_process', label: translations.sec_application_process, icon: '✍️' },
+                { key: 'documents_required', label: translations.sec_documents_required, icon: '📂' },
+                { key: 'faqs', label: translations.sec_faqs, icon: '❓' },
+                { key: 'sources', label: translations.sec_sources, icon: '🔗' },
+              ].map((section) => {
+                const content = scheme.sections?.[section.key];
+                if (!content) return null;
+                const isOpen = openSection === section.key;
+
+                return (
+                  <div 
+                    key={section.key} 
+                    className="border border-border rounded-xl overflow-hidden transition-all duration-200 bg-white"
+                  >
+                    <button
+                      onClick={() => setOpenSection(isOpen ? null : section.key)}
+                      className={`w-full flex justify-between items-center p-4 text-left font-bold text-sm transition-colors duration-150 min-h-[48px] ${
+                        isOpen ? 'bg-primary-light bg-opacity-20 text-primary' : 'text-text-primary hover:bg-background'
+                      }`}
+                      aria-expanded={isOpen}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{section.icon}</span>
+                        <span>{section.label}</span>
+                      </span>
+                      <span className="text-xs font-extrabold transform transition-transform duration-200">
+                        {isOpen ? '▲' : '▼'}
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <div className="p-4 border-t border-border bg-background text-sm text-text-secondary leading-relaxed whitespace-pre-line">
+                        {content}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* Fallback to raw text if no sections are available */
+            <div className="space-y-4">
+              <h3 className="text-base font-extrabold text-text-primary border-b border-border pb-1">
+                📋 Detail Guidelines / विस्तृत दिशानिर्देश
+              </h3>
+              <div className="text-sm text-text-secondary leading-relaxed space-y-4 whitespace-pre-line max-h-[300px] overflow-y-auto pr-2 border border-border rounded-lg p-3 bg-background">
+                {scheme.document_content}
+              </div>
+            </div>
+          )}
           
           {/* Metadata Block */}
           <div className="text-xs text-text-secondary border-t border-border pt-4 grid grid-cols-2 gap-2">
@@ -163,7 +225,7 @@ export default function SchemeDetail() {
       {/* Official Apply Link Button */}
       <div className="mt-10">
         <a
-          href="https://www.myscheme.gov.in"
+          href={scheme.apply_link || "https://www.myscheme.gov.in"}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full bg-primary text-white font-extrabold py-3.5 px-6 rounded-xl text-center shadow-md hover:bg-opacity-95 transition-all block min-h-[48px]"
@@ -176,3 +238,4 @@ export default function SchemeDetail() {
     </div>
   );
 }
+
